@@ -1,0 +1,19 @@
+root = true
+
+[*.{ts,json,yaml,yml,rb}]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[{.gitignore,.editorconfig}]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[*.{yaml,yml}]
+indent_size = 2
+indent_style = space
+
+[*.{ts,rb}]
+indent_size = 4
+indent_style = tab

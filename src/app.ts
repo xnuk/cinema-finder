@@ -71,7 +71,6 @@ const search = (theater: ReadonlyArray<Theater>) => async (
 			),
 		),
 	)
-	console.log('b');
 	return schedule_by_theater
 		.map(s => {
 			if (!s) return null

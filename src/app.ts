@@ -47,17 +47,17 @@ const search = (theater: ReadonlyArray<Theater>) => async (
 	movie_name: string,
 	yyyymmdd: string = today(),
 ) => {
-	const chunks = query.split(' ');
-	const maybe_city = chunks.shift() || '';
+	const chunks = query.split(' ')
+	const maybe_city = chunks.shift() || ''
 	const theaters = theater.filter(
 		({ area, city }) => {
 			if (searchMethod(city, maybe_city)) {
 				if (chunks.length > 0) {
-					return searchMethod(area, chunks.join(' '));
+					return searchMethod(area, chunks.join(' '))
 				}
-				return true;
+				return true
 			}
-			return searchMethod(area, query);
+			return searchMethod(area, query)
 		}
 	)
 

@@ -51,13 +51,14 @@ const search = (theater: ReadonlyArray<Theater>) => async (
 	const maybe_city = chunks.shift() || ''
 	const theaters = theater.filter(
 		({ area, city }) => {
+			const spaceless_area = area.replace(/ /g, '')
 			if (searchMethod(city, maybe_city)) {
 				if (chunks.length > 0) {
-					return searchMethod(area, chunks.join(' '))
+					return searchMethod(spaceless_area, chunks.join(''))
 				}
 				return true
 			}
-			return searchMethod(area, query)
+			return searchMethod(spaceless_area, query)
 		}
 	)
 

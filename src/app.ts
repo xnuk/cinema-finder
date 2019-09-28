@@ -43,14 +43,23 @@ const schedule = async (
 }
 
 const search = (theater: ReadonlyArray<Theater>) => async (
-	areaname: string,
-	name: string,
+	query: string,
+	movie_name: string,
 	yyyymmdd: string = today(),
 ) => {
+	const chunks = query.split(' ')
+	const maybe_city = chunks.shift() || ''
 	const theaters = theater.filter(
-		({ area, city }) =>
-			(area && searchMethod(area, areaname)) ||
-			(city && searchMethod(city, areaname)),
+		({ area, city }) => {
+			const spaceless_area = area.replace(/ /g, '')
+			if (searchMethod(city, maybe_city)) {
+				if (chunks.length > 0) {
+					return searchMethod(spaceless_area, chunks.join(''))
+				}
+				return true
+			}
+			return searchMethod(spaceless_area, query)
+		}
 	)
 
 	const schedule_by_theater = await Promise.all(
@@ -63,13 +72,12 @@ const search = (theater: ReadonlyArray<Theater>) => async (
 			),
 		),
 	)
-
 	return schedule_by_theater
 		.map(s => {
 			if (!s) return null
 
 			const schedules = s.schedule.filter(v =>
-				searchMethod(v.movie, name),
+				searchMethod(v.movie, movie_name),
 			)
 
 			if (schedules.length <= 0) return null

@@ -1,11 +1,18 @@
 import { parse, HTMLElement, TextNode } from 'node-html-parser'
-import { request } from './http'
+import { HTTPGetRequestText, HTTPGetRequestJson } from './interface'
 
 export interface Theater {
 	code: string
 	name: string
 	city: string
 	area: string
+}
+
+export interface Schedule {
+	screen: string
+	movie: string
+	code: string
+	timetable: string[]
 }
 
 const zipWith = <A, B, T>(a: A[], b: B[], func: (a: A, b: B) => T): T[] =>
@@ -56,10 +63,35 @@ const parser = (html: string): Theater[] => {
 			area: row.기초단체,
 		}))
 }
-const url =
+const theatersURL =
 	'http://www.kobis.or.kr/kobis/business/mast/thea/findTheaterInfoListXls.do'
 
-export const download = async () => parser(await request(url))
+export const getTheaters = (request: HTTPGetRequestText) => async () =>
+	parser(await request(theatersURL))
 
-if (require.main === module)
-	download().then(v => console.log(JSON.stringify(v)))
+const scheduleURL =
+	'http://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do'
+
+export const getSchedule = (request: HTTPGetRequestJson) => async (
+	theater: string,
+	yyyymmdd: string,
+): Promise<Schedule[]> => {
+	const rawData = await request(scheduleURL, {
+		theaCd: theater,
+		showDt: yyyymmdd,
+	})
+
+	return rawData.schedule.map(
+		({
+			scrnNm: screen,
+			movieNm: movie,
+			movieCd: code,
+			showTm: timetable,
+		}: any) => ({
+			screen,
+			movie: movie || '',
+			code,
+			timetable: timetable.split(','),
+		}),
+	)
+}

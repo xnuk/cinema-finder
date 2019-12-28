@@ -67,7 +67,11 @@ const theatersURL =
 	'http://www.kobis.or.kr/kobis/business/mast/thea/findTheaterInfoListXls.do'
 
 export const getTheaters = (request: HTTPGetRequestText) => async () =>
-	parser(await request(theatersURL))
+	parser(
+		await request(theatersURL, {
+			sSaleStat: '018201', // 영업중
+		}),
+	)
 
 const scheduleURL =
 	'http://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do'

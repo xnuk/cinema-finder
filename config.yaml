@@ -4,7 +4,7 @@ tsconfig.json:
     rootDir: src
     outDir: dist
     module: commonjs
-    target: es2018
+    target: esnext
 
     sourceMap: false
     allowJs: false
@@ -35,9 +35,9 @@ package.json:
     node-html-parser: ^1.1.16
 
   devDependencies:
-    '@types/node': ^12.7.7
-    typescript: ^3.6.3
-    prettier: ^1.18.2
+    "@types/node": ^13.1.1
+    typescript: ^3.7.4
+    prettier: ^1.19.1
 
 .prettierrc.json:
   printWidth: 80

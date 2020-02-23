@@ -1,67 +1,81 @@
 #![warn(rust_2018_idioms)]
 
-// use hyper::{Client, Uri};
+use std::io::{self, Read, BufReader};
+use std::fs::File;
+use std::vec::{Vec};
+use std::str::{from_utf8};
+use std::iter::repeat;
 
-// #[tokio::main]
-// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-// 	let client = Client::new();
-// 	let url = Uri::from_static(
-// 		"http://www.kobis.or.kr/kobis/business/mast/thea/findTheaterInfoListXls.do?sSaleStat=018201"
-// 	);
-// 	let future = client.get(url).await?;
-// 	println!("status: {}", future.status());
-// 	Ok(())
-// }
-
-use http::request::{Request};
-use tokio::net::{TcpStream};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::stream::{StreamExt};
-
-use reqwest::header::{ACCEPT, USER_AGENT};
-use reqwest::{Client};
-use serde::Deserialize;
-
-#[derive(Deserialize, Debug)]
-struct DNSAnswer {
-	data: String,
+use nom::{
+	do_parse,
+	tag,
+	named,
+	take_until,
+	take_while,
+	many_till,
+};
+named!{ white_space,
+	take_while!(|c| c == b' ' || c == b'\t' || c == b'\n')
 }
 
-#[derive(Deserialize, Debug)]
-struct DNS {
-	Answer: Vec<DNSAnswer>,
-}
+named!{ column_name, do_parse!(
+	take_until!(&b"<th scope=\"col\""[..]) >>
+	take_until!(&b">"[..]) >> tag!(&b">"[..]) >>
+	white_space >>
+	a: take_until!(&b"</th>"[..]) >>
+	tag!(&b"</th>"[..]) >>
+	white_space >>
+	(a)
+)}
 
-async fn get_dns() -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-	let DNS {Answer} = Client::new().get(
-		"https://cloudflare-dns.com/dns-query?name=www.kobis.or.kr&type=A"
-	).header(ACCEPT, "application/dns-json").send().await?.json::<DNS>().await?;
+named!{ header_chunk<Vec<&[u8]>>, do_parse!(
+	take_until!(&b"<thead>"[..]) >>
+	take_until!(&b"<tr>"[..]) >>
+	tag!(&b"<tr>"[..]) >>
+	test: many_till!(column_name, tag!(&b"</tr>"[..])) >>
+	take_until!(&b"</thead>"[..]) >>
+	take_until!(&b"<tbody>"[..]) >> tag!(&b"<tbody>"[..]) >>
+	(test.0)
+)}
 
-	let DNSAnswer {data} = Answer.get(0).unwrap();
-	Ok(data.to_string())
-}
+named!{ td, do_parse!(
+	take_until!(&b"<td"[..]) >> take_until!(&b">"[..]) >> tag!(&b">"[..]) >>
+	white_space >>
+	a: take_until!(&b"</td>"[..]) >> tag!(&b"</td>"[..]) >>
+	white_space >>
+	(a)
+)}
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-	{
-		let ip = get_dns().await?;
-		println!("{:?}", ip);
-		let mut stream = TcpStream::connect((ip.as_str(), 80)).await?;
-		stream.write_all(b"\
-			GET /kobis/business/mast/thea/findTheaterInfoListXls.do\
-				?sSaleStat=018201 HTTP/1.1\r\n\
-			Host: www.kobis.or.kr\r\n\
-			User-Agent: Thanks/99.0\r\n\
-			\r\n\
-		").await?;
-		let response = BufReader::new(stream);
-		response.lines()
-			.filter_map(|x| {
-				println!("{:?}", x);
-				x.ok()
-			})
-			.take_while(|line| !line.starts_with('<'))
-			.fold((), |_, _| ()).await;
-	}
+named!{ tr<Vec<&[u8]>>, do_parse!(
+	take_until!(&b"<tr>"[..]) >> tag!(&b"<tr>"[..]) >>
+	a: many_till!(td, tag!(&b"</tr>"[..])) >>
+	(a.0)
+)}
+
+fn main() -> io::Result<()> {
+	let file = File::open("./findTheaterInfoListXls.do")?;
+	// let mut reader = BufReader::new(file);
+	// let mut contents = String::new();
+	// reader.read_to_string(&mut contents)?;
+	// println!("{:?}", contents);
+	let uu: Vec<u8> = file.bytes().filter_map(|v| v.ok()).collect();
+
+	let (rest, chunk) = header_chunk(uu.as_slice()).unwrap();
+	println!("{:?}", chunk.iter().filter_map(|x| from_utf8(x).ok()).collect::<Vec<&str>>());
+
+	let res = repeat(tr).scan(rest, |rest, parser| {
+		match parser(rest) {
+			Ok((new_rest, row)) => {
+				*rest = new_rest;
+				Some(row)
+			},
+			Err(_) => None
+		}
+	});
+	res.for_each(|row| {
+		println!("{:?}", row.iter().filter_map(|x| from_utf8(x).ok()).collect::<Vec<&str>>());
+	});
 	Ok(())
 }
+
+// http://www.kobis.or.kr/kobis/business/mast/thea/findTheaterInfoList.do&sJoinYn=Y&sSaleStat=018201

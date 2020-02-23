@@ -5,17 +5,20 @@ authors = ["Xnuk Shuman <admin@xnu.kr>"]
 edition = "2018"
 
 [dependencies]
-hyper = "^0.13.2"
-http = "^0.2.0"
+# hyper = "^0.13.2"
+# http = "^0.2.0"
 
-[dependencies.serde]
-version = "^1.0.104"
-features = ["derive"]
+# [dependencies.serde]
+# version = "^1.0.104"
+# features = ["derive"]
 
-[dependencies.tokio]
-version = "^0.2.11"
-features = ["full"]
+# [dependencies.tokio]
+# version = "^0.2.11"
+# features = ["full"]
 
-[dependencies.reqwest]
-version = "^0.10.1"
-features = ["json"]
+# [dependencies.reqwest]
+# version = "^0.10.1"
+# features = ["json"]
+
+[dependencies.nom]
+version = "^5.1.0"

@@ -6,7 +6,8 @@ import {
 	Gunzip,
 	Inflate,
 } from 'zlib'
-import { get, IncomingMessage } from 'http'
+import { get } from 'https'
+import { IncomingMessage } from 'http'
 import { stringify } from 'querystring'
 import { Readable } from 'stream'
 

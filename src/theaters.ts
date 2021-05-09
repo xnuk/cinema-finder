@@ -64,7 +64,7 @@ const parser = (html: string): Theater[] => {
 		}))
 }
 const theatersURL =
-	'http://www.kobis.or.kr/kobis/business/mast/thea/findTheaterInfoListXls.do'
+	'https://www.kobis.or.kr/kobis/business/mast/thea/findTheaterInfoListXls.do'
 
 export const getTheaters = (request: HTTPGetRequestText) => async () =>
 	parser(
@@ -74,7 +74,7 @@ export const getTheaters = (request: HTTPGetRequestText) => async () =>
 	)
 
 const scheduleURL =
-	'http://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do'
+	'https://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do'
 
 export const getSchedule = (request: HTTPGetRequestJson) => async (
 	theater: string,

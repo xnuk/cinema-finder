@@ -1,10 +1,10 @@
-import { Theater, getTheaters, Schedule } from './theaters'
-import { request } from './http'
-import { search } from './search'
+import { Theater, getTheaters, Schedule } from './theaters.ts'
+import { request } from './http.ts'
+import { search } from './search.ts'
 
-import { promises as fs } from 'fs'
+import { readFile, writeFile } from 'node:fs/promises'
 
-const cachePath = process.env.CACHE_JSON || './___cache.json'
+const cachePath = process.env['CACHE_JSON'] || './___cache.json'
 
 const prettyPrint = (
 	{ name, city, area }: Theater,
@@ -21,22 +21,36 @@ const prettyPrint = (
 	return [city, area, name].join(' ') + '\n' + foo
 }
 
-if (require.main === module)
-	(async () => {
-		let f
-		try {
-			f = JSON.parse(await fs.readFile(cachePath, 'utf8'))
-		} catch (_) {
-			f = await getTheaters(request)()
-			fs.writeFile(cachePath, JSON.stringify(f), 'utf8')
-		}
-
-		const inst = search((...params: Parameters<typeof request>) =>
-			request(...params).then(body => JSON.parse(body)),
-		)(f)
-		console.log(
-			(await inst(process.argv[2], process.argv[3], process.argv[4]))
-				.map(({ theater, schedule }) => prettyPrint(theater, schedule))
-				.join('\n\n'),
+const main = async () => {
+	const [query, movieName, yyyymmdd] = process.argv.slice(2)
+	if (!query || !movieName) {
+		console.error(
+			`사용법: ${
+				process.argv[1] || 'cinema-finder'
+			} [지역] [영화명] [날짜 (yyyymmdd, 생략가능)]`,
 		)
-	})()
+		return process.exit(1)
+	}
+
+	let f
+	try {
+		f = JSON.parse(await readFile(cachePath, 'utf8'))
+	} catch (_) {
+		f = await getTheaters(request)()
+		writeFile(cachePath, JSON.stringify(f), 'utf8')
+	}
+
+	debugger
+
+	const inst = search((...params: Parameters<typeof request>) =>
+		request(...params).then(body => JSON.parse(body)),
+	)(f)
+
+	console.log(
+		(await inst(query, movieName, yyyymmdd))
+			.map(({ theater, schedule }) => prettyPrint(theater, schedule))
+			.join('\n\n'),
+	)
+}
+
+main()

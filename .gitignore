@@ -1,6 +1,3 @@
 node_modules/
-tsconfig.json
-package.json
 dist/
 ___cache.json
-.prettierrc.json

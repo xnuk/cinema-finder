@@ -1,0 +1,22 @@
+{
+	"name": "kobis",
+	"version": "1.0.0",
+	"author": "Xnuk Shuman",
+	"license": "BSD-3-Clause",
+	"type": "module",
+	"packageManager": "pnpm@8.6.12",
+	"scripts": {
+		"build": "esbuild ./src/app.ts --bundle '--external:n*' --platform=node --format=esm --target=esnext --outfile=dist/app.js",
+		"run": "node ./dist/app.js"
+	},
+	"dependencies": {
+		"node-html-parser": "^6.1.5"
+	},
+	"devDependencies": {
+		"@types/node": "^20.4.10",
+		"@xnuk/tsconfig": "^3.0.0",
+		"esbuild": "^0.19.1",
+		"prettier": "^3.0.1",
+		"typescript": "^5.1.6"
+	}
+}

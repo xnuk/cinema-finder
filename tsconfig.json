@@ -1,0 +1,9 @@
+{
+	"extends": "@xnuk/tsconfig/base.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"rootDir": "src",
+		"outDir": "dist",
+		"sourceMap": false
+	}
+}

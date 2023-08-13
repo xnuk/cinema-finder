@@ -1,5 +1,5 @@
 import { parse, HTMLElement, TextNode } from 'node-html-parser'
-import { HTTPGetRequestText, HTTPGetRequestJson } from './interface'
+import type { HTTPGetRequestText, HTTPGetRequestJson } from './interface.ts'
 
 export interface Theater {
 	code: string
@@ -17,7 +17,7 @@ export interface Schedule {
 
 const zipWith = <A, B, T>(a: A[], b: B[], func: (a: A, b: B) => T): T[] =>
 	Array.from({ length: Math.min(a.length, b.length) }, (_, i) =>
-		func(a[i], b[i]),
+		func(a[i]!, b[i]!),
 	)
 
 const getText = (v: HTMLElement | TextNode): string => {
@@ -31,25 +31,29 @@ const getText = (v: HTMLElement | TextNode): string => {
 
 const parser = (html: string): Theater[] => {
 	const el = parse(html, {
-		script: false,
-		style: false,
 		lowerCaseTagName: false,
-		pre: false,
+		comment: false,
+
+		blockTextElements: {
+			script: false,
+			noscript: false,
+			pre: false,
+			style: false,
+		},
 	})
 
 	if (el instanceof TextNode) return []
 
 	const table = el.querySelector('table.tbl_exc')
 
-	const ths = table
-		.querySelector('thead')
-		.querySelectorAll('th')
-		.map(getText)
+	const ths =
+		table?.querySelector('thead')?.querySelectorAll('th').map(getText) ?? []
 
-	const trs = table
-		.querySelector('tbody')
-		.querySelectorAll('tr')
-		.map(v => v.querySelectorAll('td').map(getText))
+	const trs =
+		table
+			?.querySelector('tbody')
+			?.querySelectorAll('tr')
+			.map(v => v.querySelectorAll('td').map(getText)) ?? []
 
 	return trs
 		.map(row =>
@@ -76,26 +80,25 @@ export const getTheaters = (request: HTTPGetRequestText) => async () =>
 const scheduleURL =
 	'https://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do'
 
-export const getSchedule = (request: HTTPGetRequestJson) => async (
-	theater: string,
-	yyyymmdd: string,
-): Promise<Schedule[]> => {
-	const rawData = await request(scheduleURL, {
-		theaCd: theater,
-		showDt: yyyymmdd,
-	})
+export const getSchedule =
+	(request: HTTPGetRequestJson) =>
+	async (theater: string, yyyymmdd: string): Promise<Schedule[]> => {
+		const rawData = await request(scheduleURL, {
+			theaCd: theater,
+			showDt: yyyymmdd,
+		})
 
-	return rawData.schedule.map(
-		({
-			scrnNm: screen,
-			movieNm: movie,
-			movieCd: code,
-			showTm: timetable,
-		}: any) => ({
-			screen,
-			movie: movie || '',
-			code,
-			timetable: timetable.split(','),
-		}),
-	)
-}
+		return rawData['schedule'].map(
+			({
+				scrnNm: screen,
+				movieNm: movie,
+				movieCd: code,
+				showTm: timetable,
+			}: any) => ({
+				screen,
+				movie: movie || '',
+				code,
+				timetable: timetable.split(','),
+			}),
+		)
+	}

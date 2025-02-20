@@ -4,19 +4,19 @@
 	"author": "Xnuk Shuman",
 	"license": "BSD-3-Clause",
 	"type": "module",
-	"packageManager": "pnpm@8.6.12",
+	"packageManager": "pnpm@10.4.1",
 	"scripts": {
 		"build": "esbuild ./src/app.ts --bundle '--external:n*' --platform=node --format=esm --target=esnext --outfile=dist/app.js",
 		"run": "node ./dist/app.js"
 	},
 	"dependencies": {
-		"node-html-parser": "^6.1.5"
+		"node-html-parser": "^7.0.1"
 	},
 	"devDependencies": {
-		"@types/node": "^20.4.10",
-		"@xnuk/tsconfig": "^3.0.0",
-		"esbuild": "^0.19.1",
-		"prettier": "^3.0.1",
-		"typescript": "^5.1.6"
+		"@types/node": "^22.13.4",
+		"@xnuk/tsconfig": "^4.0.1",
+		"esbuild": "^0.25.0",
+		"prettier": "^3.5.1",
+		"typescript": "^5.7.3"
 	}
 }

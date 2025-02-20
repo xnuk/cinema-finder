@@ -4,7 +4,7 @@ const firefox =
 export const request = (
 	url: URL | string,
 	query?: { [key: string]: string },
-) => {
+): Promise<string> => {
 	const path = new URL(url)
 	if (query != null) {
 		path.search =

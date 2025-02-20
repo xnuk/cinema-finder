@@ -1,4 +1,5 @@
-import { Theater, Schedule, getSchedule } from './theaters.ts'
+import type { Theater, Schedule } from './theaters.ts'
+import { getSchedule } from './theaters.ts'
 import { HTTPGetRequestJson } from './interface.ts'
 
 const today = () =>
@@ -15,7 +16,11 @@ const searchMethod = (from: string, to: string) => {
 export const search =
 	(request: HTTPGetRequestJson) =>
 	(theater: ReadonlyArray<Theater>) =>
-	async (query: string, movie_name: string, yyyymmdd: string = today()) => {
+	async (
+		query: string,
+		movie_name: string,
+		yyyymmdd: string = today(),
+	): Promise<{ theater: Theater; schedule: Schedule[] }[]> => {
 		const chunks = query.split(' ')
 		const maybe_city = chunks.shift() || ''
 		const theaters = theater.filter(({ area, city }) => {

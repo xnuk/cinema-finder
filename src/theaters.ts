@@ -1,4 +1,4 @@
-import { parse, HTMLElement, TextNode } from 'node-html-parser'
+import { parse, type HTMLElement, TextNode } from 'node-html-parser'
 import type { HTTPGetRequestText, HTTPGetRequestJson } from './interface.ts'
 
 export interface Theater {
@@ -70,12 +70,13 @@ const parser = (html: string): Theater[] => {
 const theatersURL =
 	'https://www.kobis.or.kr/kobis/business/mast/thea/findTheaterInfoListXls.do'
 
-export const getTheaters = (request: HTTPGetRequestText) => async () =>
-	parser(
-		await request(theatersURL, {
-			sSaleStat: '018201', // 영업중
-		}),
-	)
+export const getTheaters =
+	(request: HTTPGetRequestText) => async (): Promise<Theater[]> =>
+		parser(
+			await request(theatersURL, {
+				sSaleStat: '018201', // 영업중
+			}),
+		)
 
 const scheduleURL =
 	'https://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do'

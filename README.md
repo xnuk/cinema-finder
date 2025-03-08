@@ -1,6 +1,6 @@
 ## build
 ```sh
-node ./gen.js && npm i -D && npm run build
+npm i -D && npm run build
 ```
 
 ## run
